@@ -50,13 +50,10 @@ setup_system ()
     sudo passwd $1
     # Add the SSH key to the account. Note that as long as we are the default
     # "ubuntu" user in the AWS image, the keys will already be here.
-    cd $HOME/.ssh
-    cat authorized_keys ../tmp-ssh-keys
-    chmod 755 ../tmp-ssh-keys
-    sudo -u $1 mkdir /home/$1/.ssh
-    sudo -u $1 cp $HOME/tmp-ssh-keys /home/$1/.ssh/authorized_keys
-    sudo -u $1 chmod 600 /home/$1/.ssh/authorized_keys
-    rm $HOME/tmp-ssh-keys
+    sudo mkdir /home/$1/.ssh
+    sudo cp $HOME/.ssh/authorized_keys /home/$1/.ssh/authorized_keys
+    sudo chmod 600 /home/$1/.ssh/authorized_keys
+    sudo chown -R $1:users /home/$1/.ssh
 }
 
 #
@@ -97,7 +94,9 @@ install_console_apps ()
 #
 install_gui_apps ()
 {
-    sudo apt-get -y install lubuntu-desktop
+    sudo apt-get -y install openbox
+    sudo apt-get -y install lxterminal
+    sudo apt-get -y install tint2
     sudo apt-get -y install chromium-browser
     install_ib
     install_vnc
@@ -235,12 +234,14 @@ install_vnc ()
     FILE=$HOME/.vnc/xstartup
     rm -f $FILE
     echo "#!/bin/sh
-    # Avoid keyboard mis-mapping
-    export XKL_XMODMAP_DISABLE=1
-    # Switch to our home directory
-    cd $HOME
-    # Start a razor-qt session
-    razor-session" > $FILE
+# Avoid keyboard mis-mapping
+export XKL_XMODMAP_DISABLE=1
+# Switch to our home directory
+cd $HOME
+# Start our session
+lxterminal &
+tint2 &
+exec openbox-session" > $FILE
     chmod 755 $FILE
     chmod 700 $HOME/.vnc
 }
@@ -256,7 +257,7 @@ case "$1" in
             echo "Please run this script as the default 'ubuntu' user."
             exit 1
         fi
-        setup_system $1
+        setup_system $2
         ;;
     apps)
         if [ $EUID -eq 1000 ]; then

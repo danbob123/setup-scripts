@@ -52,12 +52,12 @@ setup_system ()
     # "ubuntu" user in the AWS image, the keys will already be here.
     sudo mkdir /home/$1/.ssh
     sudo cp $HOME/.ssh/authorized_keys /home/$1/.ssh/authorized_keys
-    sudo chmod 600 /home/$1/.ssh/authorized_keys
+    sudo chmod -R go-rwx /home/$1/.ssh
     sudo chown -R $1:users /home/$1/.ssh
     # Copy the setup script(s) to the new user directory
     sudo cp -a $HOME/setup-scripts /home/$1
     sudo chmod -R 700 /home/$1/setup-scripts
-    sudo chown $1:users /home/$1/setup-scripts
+    sudo chown -R $1:users /home/$1/setup-scripts
 }
 
 #

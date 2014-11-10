@@ -54,6 +54,10 @@ setup_system ()
     sudo cp $HOME/.ssh/authorized_keys /home/$1/.ssh/authorized_keys
     sudo chmod 600 /home/$1/.ssh/authorized_keys
     sudo chown -R $1:users /home/$1/.ssh
+    # Copy the setup script(s) to the new user directory
+    sudo cp -a $HOME/setup-scripts /home/$1
+    sudo chmod -R 700 /home/$1/setup-scripts
+    sudo chown $1:users /home/$1/setup-scripts
 }
 
 #

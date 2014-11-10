@@ -56,7 +56,7 @@ setup_system ()
     sudo chown -R $1:users /home/$1/.ssh
     # Copy the setup script(s) to the new user directory
     sudo cp -a $HOME/setup-scripts /home/$1
-    sudo chmod -R 700 /home/$1/setup-scripts
+    sudo chmod -R go-rwx /home/$1/setup-scripts
     sudo chown -R $1:users /home/$1/setup-scripts
 }
 

@@ -69,79 +69,53 @@ configure_iptables ()
 
     # IPv4
     rm -f ~/.tmp-iptables-config
-    echo "
-*security
-:INPUT ACCEPT [115:8591]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [87:15291]
-COMMIT
-*raw
-:PREROUTING ACCEPT [116:8651]
-:OUTPUT ACCEPT [87:15291]
-COMMIT
-*nat
-:PREROUTING ACCEPT [2:120]
-:INPUT ACCEPT [1:60]
-:OUTPUT ACCEPT [1:74]
-:POSTROUTING ACCEPT [2:114]
--A POSTROUTING -s 10.8.0.0/16 -o eth0 -j MASQUERADE
-COMMIT
-*mangle
-:PREROUTING ACCEPT [116:8651]
-:INPUT ACCEPT [116:8651]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [87:15291]
-:POSTROUTING ACCEPT [87:15291]
-COMMIT
-*filter
+    echo "*filter
 :INPUT DROP [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [87:15291]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
 :TCP - [0:0]
 :UDP - [0:0]
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -i lo -j ACCEPT
 -A INPUT -m conntrack --ctstate INVALID -j DROP
--A INPUT -p icmp -m icmp --icmp-type 8 -m conntrack --ctstate NEW -j ACCEPT
 -A INPUT -p udp -m conntrack --ctstate NEW -j UDP
 -A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -j TCP
--A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
--A INPUT -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -p icmp -m icmp --icmp-type 8 -m limit --limit 30/min --limit-burst 8 -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type 8 -j DROP
+-A INPUT -p tcp -m recent --set --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with tcp-reset
+-A INPUT -p udp -m recent --set --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with icmp-port-unreachable
 -A INPUT -j REJECT --reject-with icmp-proto-unreachable
+-A TCP -p tcp -m recent --update --seconds 60 --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with tcp-reset
 -A TCP -p tcp -m tcp --dport 3141 -j ACCEPT
+-A UDP -p udp -m recent --update --seconds 60 --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -j REJECT --reject-with icmp-port-unreachable
 COMMIT" > ~/.tmp-iptables-config
     sudo cp ~/.tmp-iptables-config /etc/iptables/rules.v4
     rm -f ~/.tmp-iptables-config
 
     # IPv6
     rm -f ~/.tmp-iptables-config
-    echo "
-*nat
+    echo "*raw
 :PREROUTING ACCEPT [0:0]
-:INPUT ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-:POSTROUTING ACCEPT [0:0]
-COMMIT
-*security
-:INPUT ACCEPT [8:2232]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [35:4320]
-COMMIT
-*raw
-:PREROUTING ACCEPT [39:4744]
-:OUTPUT ACCEPT [103:12976]
-COMMIT
-*mangle
-:PREROUTING ACCEPT [39:4744]
-:INPUT ACCEPT [39:4744]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [103:12976]
-:POSTROUTING ACCEPT [35:4320]
+:OUTPUT ACCEPT [83:42000]
+-A PREROUTING -s fe80::/10 -p ipv6-icmp -j ACCEPT
+-A PREROUTING -m rpfilter -j ACCEPT
+-A PREROUTING -j DROP
 COMMIT
 *filter
-:INPUT DROP [2:208]
+:INPUT DROP [0:0]
 :FORWARD DROP [0:0]
-:OUTPUT DROP [68:8656]
+:OUTPUT ACCEPT [0:0]
+:TCP - [0:0]
+:UDP - [0:0]
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate INVALID -j DROP
+-A INPUT -p ipv6-icmp -m icmp6 --icmpv6-type 8 -m conntrack --ctstate NEW -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp -j ACCEPT
+-A INPUT -p udp -m conntrack --ctstate NEW -j UDP
+-A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -j TCP
+-A INPUT -j REJECT --reject-with icmp6-port-unreachable
+-A TCP -p tcp -m tcp --dport 3141 -j ACCEPT
 COMMIT" > ~/.tmp-iptables-config
     sudo cp ~/.tmp-iptables-config /etc/iptables/rules.v6
     rm -f ~/.tmp-iptables-config

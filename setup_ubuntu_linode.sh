@@ -161,12 +161,10 @@ install_console_apps ()
     sudo apt-get -y install python3-pip
     sudo apt-get -y install python3-scipy
     sudo apt-get -y install python3-ws4py
-    # Database support 
-    sudo apt-get -y install postgresql
-    sudo apt-get -y install postgresql-client
-    sudo apt-get -y install python3-psycopg2
+    # Database support
+    sudo apt-get -y install sqlite3
+    sudo apt-get -y install sqlite3-doc
     # Compiled/complex apps
-    configure_postgresql
     install_java
     install_scikit_learn
     install_tmux_monitor
@@ -190,20 +188,6 @@ install_gui_apps ()
 # -----------------------------------------------------------------------------
 # FUNCTIONS, SPECIAL APPLICATIONS
 # -----------------------------------------------------------------------------
-
-#
-# Configure PostgreSQL.
-#
-configure_postgresql ()
-{
-    # Create a PostgreSQL user account
-    sudo -u postgres createuser --superuser $USER
-    echo "Type \"\\password $USER\" to change your PostgreSQL password."
-    echo "Then \"\\q\" to quit the Postgres shell."
-    sudo -u postgres psql
-    # Create a database for the user
-    sudo -u postgres createdb $USER
-}
 
 #
 # Get the configuration files (dotfiles) from github.

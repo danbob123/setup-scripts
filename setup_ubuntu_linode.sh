@@ -180,6 +180,7 @@ install_gui_apps ()
     sudo apt-get -y install lxterminal
     sudo apt-get -y install tint2
     sudo apt-get -y install chromium-browser
+    sudo apt-get -y install dbus-x11
     install_ib
     install_vnc
 }
